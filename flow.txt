@@ -1,0 +1,56 @@
+FLOW multer:
+
+npm i multer
+
+
+1. di folder middleware bikin file multer.js copas ini 
+=========================================================
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Set the destination folder for uploaded images
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname); // Set a unique filename for each uploaded image
+    }
+});
+
+const upload = multer({ storage: storage });
+
+module.exports = upload;
+===========================================================
+
+2. routes/movie.js
+#import multer dari folder middleware kemudian taro ini di routes
+router.post('/:id/upload', auth, upload.single('photo'), MovieController.uploadImage);
+
+
+==============================================================
+
+3. controller/movie_controller.js
+
+tambahkan method ato boleh bikin sendiri
+
+static async uploadImage(req, res, next) {
+        try {
+            const { id } = req.params;
+
+            // Check if the movie exists
+            const movie = await Movie.findByPk(id);
+            if (!movie) throw { name: 'notFound' };
+
+            // Update the 'photo' field in the database with the filename of the uploaded image
+            movie.photo = req.file.filename;
+            await movie.save();
+
+            res.status(200).json({ message: 'Image uploaded successfully' });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+bikin folder upload folder di root dulu yak.
+
+
+4. untuk jawab soal terakhir tinggal tambahin express. static file serve coba cek digoogle
